@@ -1,6 +1,7 @@
 package ChatSystem;
 
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import User.*;
 
@@ -301,18 +302,34 @@ public class ChatSystem {
     }
 
     private int promptChoice(int start, int end) {
-        int choice;
+        int choice = -1;
+        boolean choiceValidation = false;
 
         do {
             System.out.print("Enter choice between " + start + " and " + end + ": ");
-            choice = scanner.nextInt();
 
-            if (choice < start || choice > end) {
-                System.out.println("Invalid choice. Please, Try again.\n");
+            try {
+                choice = scanner.nextInt();
+                choiceValidation = validateChoice(choice, start, end);
+  
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Pleasee, Try again.\n");
+                scanner.nextLine();
+            } catch (InvalidChoiceException e) {
+                System.out.println(e.getMessage());
             }
-        } while(choice < start || choice > end);
+
+        } while (!choiceValidation);
 
         return choice;
+    }
+
+    private boolean validateChoice(int choice, int start, int end) throws InvalidChoiceException  {
+        if (choice < start || choice > end) {
+            throw new  InvalidChoiceException("Invalid choice. Please, Try again.\n");
+        }
+
+        return true;
     }
 
     public static void main(String[] args) throws Exception{

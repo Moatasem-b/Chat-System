@@ -2,11 +2,11 @@ package User;
 
 public abstract class User {
     protected String username;
-    protected String  password;
+    protected String  hashedPassword;
     
-    public User(String username, String password) {
+    public User(String username, String hashedPassword) {
         this.username = username;
-        this.password = password;
+        this.hashedPassword = hashedPassword;
     }
 
     public String getUsername() {
@@ -17,19 +17,11 @@ public abstract class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getHashedPassword() {
+        return hashedPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean checkUsername(String username) {
-        return this.username.equals(username);
-    }
-    
-    public boolean checkPassword(String password) {
-        return this.password.equals(password);
+    public void setHashedPassword(String hashedPassword) {
+        this.hashedPassword = hashedPassword;
     }
 }

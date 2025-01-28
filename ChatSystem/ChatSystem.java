@@ -1,29 +1,35 @@
 package ChatSystem;
 
 import java.util.HashMap;
+import org.mindrot.jbcrypt.BCrypt;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import User.*;
 
 public class ChatSystem {
-    private Admin admin = new Admin("admin", "admin");
-    private HashMap<String, ChatUser> users = new HashMap<>();
+    private HashMap<String, User> users = new HashMap<>();
     private static Scanner scanner = new Scanner(System.in);
 
-    public void register(String username, String password) throws UserAlreadyExistsException {
+    public ChatSystem() {
+        Admin admin = new Admin("admin", "admin");
+        users.put("admin", admin);
+    }
+
+    public void register(String username, String hashedPassword) throws UserAlreadyExistsException {
         if (users.containsKey(username)) {
             throw new UserAlreadyExistsException("This username is already registered.");
         }
 
-        ChatUser newUser = new ChatUser(username, password);
+        ChatUser newUser = new ChatUser(username, hashedPassword);
         users.put(username, newUser);
     }
 
     public void registerHandler() throws UserAlreadyExistsException {
         String username = promptUsername();
         String password = promptPassword();
+        String hashedPassord = BCrypt.hashpw(password, BCrypt.gensalt());
 
-        register(username, password);
+        register(username, hashedPassord);
     }
 
     public void registerPageHandler() {
@@ -36,17 +42,13 @@ public class ChatSystem {
     }
 
     public User login(String username, String password) throws UserNotFoundException {
-        if (admin.checkUsername(username) && admin.checkPassword(password)) {
-            return admin;
-        }
-
         User user = users.get(username);
 
-        if (user == null || !user.checkPassword(password)) {
+        if (user == null || !checkPassword(user, password)) {
             throw new UserNotFoundException("Incorrect Username or Password.");
         }
-
-        return user;
+        
+        return (username.equals("admin"))? (Admin) user : (ChatUser) user;
     }
 
     public User loginHandler() throws UserNotFoundException {
@@ -282,7 +284,7 @@ public class ChatSystem {
     }
 
     private String promptMessage() {
-        System.out.print("Enter message (Enter to quit): ");
+        System.out.print("Enter a message (Enter to quit): ");
         String message = scanner.nextLine();
 
         return message;
@@ -290,9 +292,9 @@ public class ChatSystem {
 
     private ChatUser getChatUser() {
         String username = promptUsername();
-        ChatUser user = users.get(username);
+        User user = users.get(username);
 
-        return user;
+        return (user == null)? null : (ChatUser) user;
     }
 
     private void validateUser(User user) throws UserNotFoundException {
@@ -332,15 +334,27 @@ public class ChatSystem {
         return true;
     }
 
+    public boolean checkUsername(User user, String username) {
+        return user.getUsername().equals(username);
+    }
+    
+    public boolean checkPassword(User user, String password) {
+        return BCrypt.checkpw(password, user.getHashedPassword());
+    }
+
     public static void main(String[] args) throws Exception{
         ChatSystem chatSystem = new ChatSystem();
-        chatSystem.register("Ahmed", "1");
-        chatSystem.register("Mona", "2");
-        chatSystem.addFriendRequest(chatSystem.users.get("Ahmed"), chatSystem.users.get("Mona"));
-        chatSystem.acceptFriendRequest(chatSystem.users.get("Mona"), chatSystem.users.get("Ahmed"));
-        chatSystem.users.get("Ahmed").sendMessage(chatSystem.users.get("Mona"), "Hello, Mona!");
-        chatSystem.users.get("Ahmed").sendMessage(chatSystem.users.get("Mona"), "How are you doing?");
-        chatSystem.users.get("Mona").sendMessage(chatSystem.users.get("Ahmed"), "Hi! I'm fine. what about you?");
+        chatSystem.register("Ahmed", BCrypt.hashpw("1", BCrypt.gensalt()));
+        chatSystem.register("Mona", BCrypt.hashpw("2", BCrypt.gensalt()));
+        ChatUser Ahmed = (ChatUser) chatSystem.users.get("Ahmed");
+        ChatUser Mona = (ChatUser) chatSystem.users.get("Mona");
+
+        Ahmed.addFriendRequest(Mona);
+        Mona.acceptFriendRequest(Ahmed);
+        Ahmed.sendMessage(Mona, "Hello, Mona!");
+        Ahmed.sendMessage(Mona, "How are you doing?");
+        Ahmed.sendMessage(Ahmed, "Hi! I'm fine. what about you?");
+
         chatSystem.HomePageHandler();
     }
 }

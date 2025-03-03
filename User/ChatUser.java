@@ -14,14 +14,11 @@ public class ChatUser extends User {
     private ArrayList<ChatUser> friendRequests = new ArrayList<>();
     private HashMap<String, Chat> chats = new HashMap<>();
 
-    public ChatUser(String username, String password) {
-        super(username, password);
+    public ChatUser(String username, String hashedPassword) {
+        super(username, hashedPassword);
     }
 
-    public boolean addFriendRequest(ChatUser user) throws UserAlreadyExistsException {
-        if (user == null) {
-            return false;
-        }
+    public void addFriendRequest(ChatUser user) throws UserAlreadyExistsException {
         if (friends.contains(user)) {
             throw new UserAlreadyExistsException("You are already friends.");
         }
@@ -31,9 +28,11 @@ public class ChatUser extends User {
         if (friendRequests.contains(user)) {
             throw new UserAlreadyExistsException("This user has already sent you a friend request.");
         }
+        if (user == this) {
+            throw new UserAlreadyExistsException("can't send yourself a friend request.");
+        }
 
         user.friendRequests.add(this);
-        return true;
     }
 
     public boolean unsendFriendRequest(ChatUser user) {
@@ -44,42 +43,32 @@ public class ChatUser extends User {
         return user.friendRequests.remove(this);
     }
 
-    public boolean cancelFriendRequest(ChatUser user) {
-        if (user == null) {
-            return false;
+    public void cancelFriendRequest(ChatUser user) throws UserNotFoundException {
+        if (!friendRequests.contains(user)) {
+            throw new UserNotFoundException("The request not found.");
         }
 
-        return friendRequests.remove(user);
+
+        friendRequests.remove(user);
     }
 
-    public boolean acceptFriendRequest(ChatUser user) {
-        if (user == null || !friendRequests.contains(user)) {
-            return false;
+    public void acceptFriendRequest(ChatUser user) throws UserNotFoundException {
+        if (!friendRequests.contains(user)) {
+            throw new UserNotFoundException("The request not found.");
         }
 
         friends.add(user);
         user.friends.add(this);
-        cancelFriendRequest(user);
-
-        return true;    // return cancelFriendRequest(user);
-
-        // if (!cancelFriendRequest(user)) {
-        //     return false;
-        // }
-
-        // friends.add(user);
-        // user.friends.add(this);
-        // return true;
+        friendRequests.remove(user);
     }
 
-    public boolean removeFriend(ChatUser user) {
-        if (user == null || !friends.contains(user)) {
-            return false;
+    public void removeFriend(ChatUser user) throws UserNotFoundException {
+        if (!friends.contains(user)) {
+            throw new UserNotFoundException("The friend not found.");
         }
 
         friends.remove(user);
         user.friends.remove(this);
-        return true;
     }
 
     public void sendMessage(ChatUser user, String message) {
@@ -105,15 +94,6 @@ public class ChatUser extends User {
         }
     }
 
-    // public Chat createNewChat(ChatUser user) {
-    //     if (chats.containsKey(user.username)) {
-    //         return null;
-    //     }
-
-    //     Chat newChat = new Chat();
-    //     return newChat;
-    // }
-
     public boolean addChat(ChatUser user, Chat chat) {
         if (user == null || chat == null || chats.containsKey(user.username)) {
             return false;
@@ -123,41 +103,39 @@ public class ChatUser extends User {
         return true;
     }
 
-    public boolean clearChatHistory(ChatUser user) {
-        if (user == null || chats.replace(user.username, new Chat()) == null) {
-            return false;
+    public void clearChatHistory(ChatUser user) throws ChatNotFoundException {
+        if (!chats.containsKey(user.username)) {
+            throw new ChatNotFoundException("The chat not found.");
         }
 
-        return true;
+        chats.replace(user.username, new Chat());
     }
 
-    public boolean removeChat(ChatUser user) {
-        if (user == null || chats.remove(user.username) == null) {
-            return false;
+    public void removeChat(ChatUser user) throws ChatNotFoundException {
+        if (!chats.containsKey(user.username)) {
+            throw new ChatNotFoundException("The chat not found.");
         }
 
-        return true;
+        chats.remove(user.username);
     }
 
     public void displayFriends() {
-        if (friends.isEmpty()) {
-            System.out.println("No friends yet.");
-            return;
-        }
-        
         for (ChatUser user : friends) {
             System.out.println(user.username);
+        }
+
+        if (friends.isEmpty()) {
+            System.out.println("No friends yet.");
         }
     }
 
     public void displayFriendRequests() {
-        if (friendRequests.isEmpty()) {
-            System.out.println("No pending requests.");
-            return;
-        }
-
         for (ChatUser user : friendRequests) {
             System.out.println(user.username);
+        }
+
+        if (friendRequests.isEmpty()) {
+            System.out.println("No pending requests.");
         }
     }
 

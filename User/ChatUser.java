@@ -35,21 +35,12 @@ public class ChatUser extends User {
         user.friendRequests.add(this);
     }
 
-    public boolean unsendFriendRequest(ChatUser user) {
-        if (user == null) {
-            return false;
-        }
-
-        return user.friendRequests.remove(this);
-    }
-
     public void cancelFriendRequest(ChatUser user) throws UserNotFoundException {
-        if (!friendRequests.contains(user)) {
+        if (!user.friendRequests.contains(this)) {
             throw new UserNotFoundException("The request not found.");
         }
 
-
-        friendRequests.remove(user);
+        user.friendRequests.remove(this);
     }
 
     public void acceptFriendRequest(ChatUser user) throws UserNotFoundException {
@@ -59,6 +50,15 @@ public class ChatUser extends User {
 
         friends.add(user);
         user.friends.add(this);
+        friendRequests.remove(user);
+    }
+
+    public void denyFriendRequest(ChatUser user) throws UserNotFoundException {
+        if (!friendRequests.contains(user)) {
+            throw new UserNotFoundException("The request not found.");
+        }
+
+
         friendRequests.remove(user);
     }
 

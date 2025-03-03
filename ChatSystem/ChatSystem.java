@@ -170,13 +170,14 @@ public class ChatSystem {
         System.out.println("1. Add a new friend.");
         System.out.println("2. Cancel friend request.");
         System.out.println("3. Accept friend request.");
-        System.out.println("4. Remove friend.");
-        System.out.println("5. Enter chat.");
-        System.out.println("6. Clear chat history.");
-        System.out.println("7. Delete chat.");
-        System.out.println("8. Display friend requests.");
-        System.out.println("9. Display friends.");
-        System.out.println("10. Log out.");
+        System.out.println("4. Deny friend request.");
+        System.out.println("5. Remove friend.");
+        System.out.println("6. Enter chat.");
+        System.out.println("7. Clear chat history.");
+        System.out.println("8. Delete chat.");
+        System.out.println("9. Display friend requests.");
+        System.out.println("10. Display friends.");
+        System.out.println("11. Log out.");
         System.out.println("-----------------------------");
     }
 
@@ -192,24 +193,27 @@ public class ChatSystem {
                 actioinHandler(user, "AcceptFriendRequest");
             break;
             case 4:
-                actioinHandler(user, "RemoveFriend");
+                actioinHandler(user, "DenyFriendRequest");
             break;
             case 5:
-                actioinHandler(user, "EnterChat");
+                actioinHandler(user, "RemoveFriend");
             break;
             case 6:
-                actioinHandler(user, "ClearChatHistory");
+                actioinHandler(user, "EnterChat");
             break;
             case 7:
-                actioinHandler(user, "RemoveChat");
+                actioinHandler(user, "ClearChatHistory");
             break;
             case 8:
-                user.displayFriendRequests();
+                actioinHandler(user, "RemoveChat");
             break;
             case 9:
-                user.displayFriends();
+                user.displayFriendRequests();
             break;
             case 10:
+                user.displayFriends();
+            break;
+            case 11:
                 System.out.println("\nLogged out.");
             break;
         }
@@ -234,6 +238,9 @@ public class ChatSystem {
             break;
             case "AcceptFriendRequest":
                 acceptFriendRequest(user, recipient);
+            break;
+            case "DenyFriendRequest":
+                denyFriendRequest(user, recipient);
             break;
             case "RemoveFriend":
                 removeFriend(user, recipient);
@@ -288,6 +295,15 @@ public class ChatSystem {
         try {
             sender.acceptFriendRequest(recipient);
             System.out.println("The request has been accepted successfully.");
+        } catch (UserNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void denyFriendRequest(ChatUser sender, ChatUser recipient) {
+        try {
+            sender.denyFriendRequest(recipient);
+            System.out.println("The request has been denied successfully.");
         } catch (UserNotFoundException e) {
             System.out.println(e.getMessage());
         }
